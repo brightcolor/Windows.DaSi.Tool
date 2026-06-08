@@ -642,6 +642,9 @@ function Restore-UserProfile {
 
 function Backup-ApplicationProfile ($AppName, $ProfilePathInUserDir, $ProcessName, [string[]]$ExcludeDirs = @()) {
     if ($AppName -in "Firefox", "Thunderbird" -and $SyncHash.AutoUpdate) { Invoke-AppUpdateCheckAndInstall $AppName "$ProcessName.exe" }
+    if ($AppName -in "Edge", "Chrome", "Brave") {
+        Write-Log "[HINWEIS] $AppName-Passwoerter/Cookies sind an diesen PC gebunden (DPAPI/App-Bound Encryption). Restore klappt nur auf DEMSELBEN PC. Fuer einen PC-Wechsel bitte Browser-Sync nutzen."
+    }
 
     $appProfilePath = Join-Path $State.SourcePath $ProfilePathInUserDir
     if (Test-Path $appProfilePath) {
@@ -664,6 +667,9 @@ function Backup-ApplicationProfile ($AppName, $ProfilePathInUserDir, $ProcessNam
 function Restore-ApplicationProfile ($AppName, $ProfilePathInUserDir, $ProcessName) {
     Install-App $AppName "$ProcessName.exe"
     if ($AppName -in "Firefox", "Thunderbird" -and $SyncHash.AutoUpdate) { Invoke-AppUpdateCheckAndInstall $AppName "$ProcessName.exe" }
+    if ($AppName -in "Edge", "Chrome", "Brave") {
+        Write-Log "[HINWEIS] Falls dieses $AppName-Backup von einem ANDEREN PC stammt: Passwoerter/Cookies bleiben verschluesselt und $AppName kann das Profil zuruecksetzen. Lesezeichen u. Co. werden aber uebernommen."
+    }
 
     $backupSourceDir = Join-Path $State.BackupPath "$AppName-Profil"
     if (-not (Test-Path $backupSourceDir)) { Write-Log "[FEHLER] $AppName Backup nicht gefunden."; return }
